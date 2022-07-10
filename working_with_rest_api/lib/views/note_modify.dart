@@ -6,7 +6,7 @@ import 'package:working_with_rest_api/services/note_service.dart';
 
 class NoteModify extends StatefulWidget {
   final String? noteID;
-  NoteModify({this.noteID});
+  const NoteModify({Key? key, this.noteID}) : super(key: key);
 
   @override
   State<NoteModify> createState() => _NoteModifyState();
@@ -41,7 +41,7 @@ class _NoteModifyState extends State<NoteModify> {
         if (response.error) {
           errorMessage = response.errorMessage ?? 'An error occured';
         }
-        note = response.data!;
+        note = response.data;
         _titleController.text = note!.noteTitle;
         _contentController.text = note!.noteContent;
       });
@@ -71,10 +71,12 @@ class _NoteModifyState extends State<NoteModify> {
                   width: double.infinity,
                   height: 35,
                   // ignore: deprecated_member_use
-                  child: RaisedButton(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      primary: Theme.of(context).primaryColor,
+                    ),
                     child:
                         Text('Submit', style: TextStyle(color: Colors.white)),
-                    color: Theme.of(context).primaryColor,
                     onPressed: () async {
                       if (isEditing) {
                         // update note
@@ -82,9 +84,11 @@ class _NoteModifyState extends State<NoteModify> {
                         setState(() {
                           _isloading = true;
                         });
+
                         final note = NoteInsert(
                             noteTitle: _titleController.text,
                             noteContent: _contentController.text);
+
                         final result = await notesService.createNote(note);
 
                         setState(() {
@@ -103,7 +107,7 @@ class _NoteModifyState extends State<NoteModify> {
                                   content: Text(text),
                                   actions: <Widget>[
                                     // ignore: deprecated_member_use
-                                    FlatButton(
+                                    ElevatedButton(
                                       child: Text('Ok'),
                                       onPressed: () {
                                         Navigator.of(context).pop();

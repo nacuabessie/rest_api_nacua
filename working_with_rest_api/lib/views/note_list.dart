@@ -38,20 +38,24 @@ class _NoteListState extends State<NoteList> {
       _isLoading = false;
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('List of notes')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => NoteModify()));
-        },
-        child: Icon(Icons.add),
-      ),
-      body: Builder(
-        builder: (_){
-           if (_isLoading) {
+        appBar: AppBar(title: Text('List of notes')),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => NoteModify()))
+                .then((_) {
+              _fetchNotes();
+            });
+          },
+          child: Icon(Icons.add),
+        ),
+        body: Builder(
+          builder: (_) {
+            if (_isLoading) {
               return Center(child: CircularProgressIndicator());
             }
 
@@ -59,7 +63,7 @@ class _NoteListState extends State<NoteList> {
               return Center(child: Text(_apiResponse.errorMessage!));
             }
 
-          return ListView.separated(
+            return ListView.separated(
               separatorBuilder: (_, __) =>
                   Divider(height: 1, color: Colors.green),
               itemBuilder: (_, index) {
@@ -70,7 +74,7 @@ class _NoteListState extends State<NoteList> {
                   confirmDismiss: (direction) async {
                     final result = await showDialog(
                         context: context, builder: (_) => NoteDelete());
-                    print(result);
+                    // print(result);
                     return result;
                   },
                   background: Container(
@@ -88,17 +92,15 @@ class _NoteListState extends State<NoteList> {
                     ),
                     subtitle: Text(
                         'Last edited on ${formatDateTime(_apiResponse.data![index].latestEditDateTime ?? _apiResponse.data![index].createDateTime)}'),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => NoteModify(
-                              noteID: _apiResponse.data![index].noteID)));
-                    },
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => NoteModify(
+                            noteID: _apiResponse.data![index].noteID))),
                   ),
                 );
               },
               itemCount: _apiResponse.data!.length,
             );
-        } ,)
-    );
+          },
+        ));
   }
 }

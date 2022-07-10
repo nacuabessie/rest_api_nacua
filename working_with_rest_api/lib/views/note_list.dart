@@ -73,8 +73,34 @@ class _NoteListState extends State<NoteList> {
                   onDismissed: (direction) {},
                   confirmDismiss: (direction) async {
                     final result = await showDialog(
-                        context: context, builder: (_) => NoteDelete());
-                    // print(result);
+                      context: context,
+                      builder: (_) => NoteDelete(),
+                    );
+                    if (result) {
+                      final deleteResult = await service
+                          .deleteNote(_apiResponse.data![index].noteID);
+                      var message;
+                      if (deleteResult.data == true) {
+                        message = 'The note was deleted successfully.';
+                      } else {
+                        message =
+                            deleteResult.errorMessage ?? 'An error occurred.';
+                      }
+
+                      showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                                title: const Text('Done'),
+                                content: Text(message),
+                                actions: <Widget>[
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      child: const Text('Ok')),
+                                ],
+                              ));
+                      return deleteResult.data ?? false;
+                    } // print(result);
                     return result;
                   },
                   background: Container(
@@ -92,11 +118,14 @@ class _NoteListState extends State<NoteList> {
                     ),
                     subtitle: Text(
                         'Last edited on ${formatDateTime(_apiResponse.data![index].latestEditDateTime ?? _apiResponse.data![index].createDateTime)}'),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => NoteModify(
-                            noteID: _apiResponse.data![index].noteID))).then((data){
-                              _fetchNotes();
-                            })),
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute(
+                            builder: (_) => NoteModify(
+                                noteID: _apiResponse.data![index].noteID)))
+                        .then((data) {
+                      _fetchNotes();
+                    }),
+                  ),
                 );
               },
               itemCount: _apiResponse.data!.length,

@@ -2,12 +2,14 @@ import 'dart:convert';
 import 'package:working_with_rest_api/models/api_reponse.dart';
 import 'package:working_with_rest_api/models/note_for_listing.dart';
 import 'package:http/http.dart' as http;
+import 'package:working_with_rest_api/models/note_insert.dart';
 import '../models/note.dart';
 
 class NotesService {
   static const API = 'https://tq-notes-api-jkrgrdggbq-el.a.run.app/';
 
-  static const headers = {'apiKey': 'b2542e55-74ec-4038-8284-23e7cde66dc4'};
+  static const headers = {'apiKey': 'b2542e55-74ec-4038-8284-23e7cde66dc4',
+  'Content-Tyoe': 'application/jason'};
 
   Future<APIResponse<List<NoteForListing>>> getNotesList() {
     return http.get(Uri.parse('$API/notes'), headers: headers).then((data) {
@@ -37,5 +39,16 @@ class NotesService {
       return APIResponse<Note>(error: true, errorMessage: 'An error occured');
     }).catchError((_) =>
             APIResponse<Note>(error: true, errorMessage: 'An error occured'));
+  }
+
+  Future<APIResponse<bool>> createNote(NoteInsert item) {
+    return http.post(Uri.parse('$API/notes/'), headers: headers, body: json.encode(item.toJson()))
+        .then((data) {
+      if (data.statusCode == 201) {
+        return APIResponse<bool>(data: true);
+      }
+      return APIResponse<bool>(error: true, errorMessage: 'An error occured');
+    }).catchError((_) =>
+            APIResponse<bool>(error: true, errorMessage: 'An error occured'));
   }
 }
